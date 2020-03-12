@@ -16,8 +16,10 @@ matplotlib.use('TkAgg')     # has to be here due to plt.show() command - https:/
 
 grid_size = 9
 
-image_name = '043B'     # image_name
-directory_name = '/Users/valosek/Documents/python_projects/200dpi/'
+image_name = '082R'     # image_name
+# directory_name = '/Users/valosek/Documents/python_projects/200dpi/'
+directory_name = '/Users/jan/Projects/personal/valda/image_shuffler/data/'
+
 image_path = directory_name + image_name + '.bmp'
 
 image = img.imread(image_path)      # fetch image using matplotlib.image
