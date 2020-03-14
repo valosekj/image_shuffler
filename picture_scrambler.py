@@ -144,16 +144,15 @@ class Scrambler():
             image = img.imread(img_path)      # fetch image using matplotlib.image
             image_shuffled = image.copy()       # create copy of original image
 
-            image_size = image.shape        # get image size
-            image_x = image_size[0]         # get size in x-axis
-            image_y = image_size[1]         # get size in y-axis
+            width = image.shape[0]
+            height = image.shape[1]
 
             ### Show original image
             # plt.imshow(image)
             # plt.show()
 
-            index_x = range(1,int(image_x/GRID_SIZE*(GRID_SIZE+1)),int(image_x/GRID_SIZE))      # define posititons in voxel for cutting/splitting input image
-            index_y = range(1,int(image_y/GRID_SIZE*(GRID_SIZE+1)),int(image_x/GRID_SIZE))
+            index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in voxel for cutting/splitting input image
+            index_y = range(1,int(height/GRID_SIZE*(GRID_SIZE+1)),int(height/GRID_SIZE))
             index_subplot=0
             subimage_min = []
             sub_image = []
