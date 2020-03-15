@@ -32,7 +32,7 @@ class Scrambler():
     def __init__(self):
         self.__input_dir = ""
         self.__output_dir = ""
-        self.__img_paths = {}   #format: { "img_name": "img_path"}
+        self.__img_paths = {}   # format: { "img_name": "img_path"}
         self.__count_saved_img = 0
 
     def main_logic(self):
@@ -125,7 +125,7 @@ class Scrambler():
         Check if input_dir exists, then ensure output directory in path.
         :param input_dir: input directory path
         :type input_dir: str
-        :param output_dir_name: name output directory
+        :param output_dir_name: name of output directory
         :type output_dir_name: str
         :return: Return out_dir if is exists or was created. Otherwise return None.
         :rtype: str, None
@@ -140,11 +140,16 @@ class Scrambler():
         return out_dir
 
     def __make_output(self, img_paths, output_dir):
+        """
+        Function for shuffle of image
+        :param img_paths: image paths
+        :param output_dir: output directory
+        :return:
+        """
+        for img_name, img_path in img_paths.items():    # loop through individual images
 
-        for img_name, img_path in img_paths.items():
-
-            image = img.imread(img_path)        # fetch image using matplotlib.image
-            image_shuffled = image.copy()       # create copy of original image
+            image = img.imread(img_path)                # fetch image using matplotlib.image
+            image_shuffled = image.copy()               # create copy of original image
 
             width = image.shape[0]
             height = image.shape[1]
@@ -153,31 +158,37 @@ class Scrambler():
             # plt.imshow(image)
             # plt.show()
 
-            index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in voxel for cutting/splitting input image
+            index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in voxel for splitting input image
             index_y = range(1,int(height/GRID_SIZE*(GRID_SIZE+1)),int(height/GRID_SIZE))
             index_subplot=0
-            subimage_min = []
+            subimage_min = {}
             sub_image = []
 
             for step_x in range(GRID_SIZE):
                 for step_y in range(GRID_SIZE):
-                    index_subplot = index_subplot + 1
+                    index_subplot += 1
                     sub_image.append(image[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :])    # cut/split input image into grid and save individual subimages into one 4D array
                     # plt.subplot(GRID_SIZE,GRID_SIZE,index_subplot)      # create empty subplot
                     # plt.imshow(sub_image[index_subplot-1])
 
-                    subimage_min.append(sub_image[index_subplot-1].min())   # compute min of individual subimages
+                    subimage_min[index_subplot-1] = sub_image[index_subplot-1].min()
 
             #plt.show()
 
+            # TODO - finish this part
+            ### Shuffle only not zero subiamges
+            #subimage_min_lower = {}
+            #subimage_min_lower = {k: v for (k, v) in subimage_min.items() if v < 100}
 
-            sub_image_random = sub_image.copy()     # Create copy of original 4D matrix with individual subimages
+
+            ### Shuffle randomly all subimages
+            sub_image_random = sub_image.copy()     # Create copy of the original 4D list (list of 3D arrays) with individual subimages
             random.shuffle(sub_image_random)        # Shuffle randomly subimages
             index_subplot=0
 
             for step_x in range(GRID_SIZE):
                 for step_y in range(GRID_SIZE):
-                    index_subplot = index_subplot + 1
+                    index_subplot += 1
                     #plt.subplot(GRID_SIZE,GRID_SIZE,index_subplot)      # create empty subplot
                     #plt.imshow(sub_image_random[index_subplot-1])       # plot randomly shuffled subimages
 
@@ -192,7 +203,6 @@ class Scrambler():
             img.imsave(os.path.join(output_dir, img_renamed),image_shuffled)
             self.__count_saved_img += 1
 
-        #print(f"Pocet ulozenych obrazku: {self.__count_saved_img}")
         print("Number of succesfully processed images: {}".format(self.__count_saved_img))
 
 
