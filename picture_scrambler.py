@@ -1,10 +1,12 @@
 ########################################
 #
-# Script for scrambling/shuffling input image(s).
+# Script for shuffling of image(s).
 # Output data will be stored in input directory
-# with created directory like 'scrambled_data'.
-# Jan Valosek, 2020, fMRI lab Olomouc
-# Jan Vicha, 2020
+# into newly created directory 'scrambled_data'.
+#
+# Jan Valosek, fMRI laboratory Olomouc
+# Jan Vicha
+# 2020
 # VER = 14-03-2020
 #
 ########################################
@@ -16,8 +18,8 @@ import os, sys, random
 
 ########### Settings for Change
 # INPUT_DIR = ""
-# INPUT_DIR = '/Users/valosek/Documents/python_projects/200dpi/'
-INPUT_DIR = '/Users/jan/Projects/personal/valda/image_shuffler/data/'
+INPUT_DIR = '/Users/valosek/Documents/python_projects/200dpi_develop/'
+# INPUT_DIR = '/Users/jan/Projects/personal/valda/image_shuffler/data/'
 OUTPUT_DIR_NAME = 'scrambled_data'
 ENABLED_FORMATS = ["bmp"]
 GRID_SIZE = 9
@@ -44,7 +46,7 @@ class Scrambler():
 
         self.__img_paths = self.__get_img_paths(self.__input_dir, ENABLED_FORMATS)
         if len(self.__img_paths) == 0:
-            print("Vstupni adresar neobsahuje zadne povolene soubory.")
+            print("Input directory is empty.")
             return
 
         self.__output_dir = self.__make_output_dir(self.__input_dir, OUTPUT_DIR_NAME)
@@ -57,8 +59,8 @@ class Scrambler():
 
     def __get_input_dir(self):
         """
-        This function control global variable INPUT_DIR if is valid and if not then,
-        control input argument for valid directory path.        
+        Control global variable INPUT_DIR.
+        INPUT_DIR can be set in this script or passed as 1st argument
         :return: Return valid directory path or None.
         :rtype: str, None
         """        
@@ -66,22 +68,22 @@ class Scrambler():
         # CHECK INPUT_DIR FROM SCRIPT
         if len(INPUT_DIR) != 0:
             if self.__check_dir(INPUT_DIR):
-                print("Byla zvolena validni cesta ve scriptu k adresari.")
+                print("Path to input directory is correct. Continuing...")
                 return INPUT_DIR
             else:
-                print("Byla zvolena NEvalidni cesta ve scriptu k adresari.")
+                print("ERROR: Path to input directory is incorrect.")
                 return None
 
         # CHECK INPUT_DIR FROM input ARGUMENT
         if len(sys.argv) > 1:
             if self.__check_dir(sys.argv[1]):
-                print("Cesta k adresari ze vstupu je validni.")
+                print("Path to input directory is correct. Continuing...")
                 return sys.argv[1]
             else:
-                print("Zadana cesta k adresari je neplatna.")
+                print("ERROR: Path to input directory is incorrect.")
                 return None
         else:
-            print("Nebyla zadana cesta k adresari.")
+            print("No path to input directory is set.")
             return None
 
     def __check_dir(self, input_dir):
@@ -101,7 +103,7 @@ class Scrambler():
         
     def __get_img_paths(self, input_dir, enabled_formats):
         """
-        Return directory with all images name and images path. Include only enabled formats.
+        Return directory with all image names and images paths. Include only enabled formats.
         :param input_dir: Input directory path with images
         :type input_dir: str
         :param enabled_formats: list of enabled formats
@@ -119,7 +121,7 @@ class Scrambler():
 
     def __make_output_dir(self, input_dir, output_dir_name):
         """
-        Make output directory for data storing in input_dir path.
+        Make output directory for shuffled image(s) in INPUT_DIR path.
         Check if input_dir exists, then ensure output directory in path.
         :param input_dir: input directory path
         :type input_dir: str
@@ -129,19 +131,19 @@ class Scrambler():
         :rtype: str, None
         """                      
         if not os.path.exists(input_dir):
-            print("Nezdarilo se vytvorit output  adresar, protoze neni zadan spravne vstupni adresar.")
+            print("ERROR: Output directory could not be created. Path to input directory is incorrect.")
             return None
         out_dir = os.path.join(input_dir, output_dir_name)
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
-            print(f"Ve vstupnim adresari byl vytvoren novy adresar s nazvem: '{output_dir_name}'")
+            print("Output directory {} was successfully created inside {}".format(output_dir_name,input_dir))
         return out_dir
 
     def __make_output(self, img_paths, output_dir):
 
         for img_name, img_path in img_paths.items():
 
-            image = img.imread(img_path)      # fetch image using matplotlib.image
+            image = img.imread(img_path)        # fetch image using matplotlib.image
             image_shuffled = image.copy()       # create copy of original image
 
             width = image.shape[0]
@@ -190,7 +192,8 @@ class Scrambler():
             img.imsave(os.path.join(output_dir, img_renamed),image_shuffled)
             self.__count_saved_img += 1
 
-        print(f"Pocet ulozenych obrazku: {self.__count_saved_img}")
+        #print(f"Pocet ulozenych obrazku: {self.__count_saved_img}")
+        print("Number of succesfully processed images: {}".format(self.__count_saved_img))
 
 
 if __name__ == "__main__":
