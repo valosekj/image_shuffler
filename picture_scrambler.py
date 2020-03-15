@@ -18,7 +18,7 @@ import os, sys, random
 
 ########### Settings for Change
 # INPUT_DIR = ""
-INPUT_DIR = '/Users/valosek/Documents/python_projects/200dpi_develop/'
+INPUT_DIR = '/Users/valosek/Documents/python_projects/picture_scramble/data/'
 # INPUT_DIR = '/Users/jan/Projects/personal/valda/image_shuffler/data/'
 OUTPUT_DIR_NAME = 'scrambled_data'
 ENABLED_FORMATS = ["bmp"]
