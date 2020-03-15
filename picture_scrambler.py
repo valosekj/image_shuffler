@@ -18,8 +18,8 @@ import os, sys, random
 
 ########### Settings for Change
 # INPUT_DIR = ""
-INPUT_DIR = '/Users/valosek/Documents/python_projects/200dpi_develop/'
-# INPUT_DIR = '/Users/jan/Projects/personal/valda/image_shuffler/data/'
+# INPUT_DIR = '/Users/valosek/Documents/python_projects/200dpi_develop/'
+INPUT_DIR = '/Users/jan/Projects/personal/valda/image_shuffler/data/'
 OUTPUT_DIR_NAME = 'scrambled_data'
 ENABLED_FORMATS = ["bmp"]
 GRID_SIZE = 9
@@ -53,7 +53,8 @@ class Scrambler():
         if self.__output_dir is None:
             return
 
-        self.__make_output(self.__img_paths, self.__output_dir)
+        # self.__make_output(self.__img_paths, self.__output_dir)
+        self.__make_output_2(self.__img_paths, self.__output_dir)
 
 
 
@@ -138,6 +139,62 @@ class Scrambler():
             os.mkdir(out_dir)
             print("Output directory {} was successfully created inside {}".format(output_dir_name,input_dir))
         return out_dir
+
+    def __make_output_2(self, img_paths, output_dir):
+        for img_name, img_path in img_paths.items():    # loop through individual images
+
+            image = img.imread(img_path)                # fetch image using matplotlib.image
+            image_shuffled = image.copy()               # create copy of original image
+
+            width = image.shape[0]
+            height = image.shape[1]
+
+            ### Show original image
+            # plt.imshow(image)
+            # plt.show()
+
+            index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in voxel for splitting input image
+            index_y = range(1,int(height/GRID_SIZE*(GRID_SIZE+1)),int(height/GRID_SIZE))
+
+            sub_image = {}
+
+            # MAKE dictionary of non zero pixels
+            for step_x in range(GRID_SIZE):
+                for step_y in range(GRID_SIZE):
+                    _add_part = image[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :]
+
+                    if _add_part.min() < 200:
+                        sub_image[(step_x, step_y)] = _add_part
+                    
+
+            ### Shuffle randomly all values
+            values =  list(sub_image.values())
+            random.shuffle(values)
+
+            shuffled_sub_images = dict()
+            for index, key in enumerate(sub_image.keys(),0):
+                shuffled_sub_images[key] = values[index]
+
+
+
+            for step_x in range(GRID_SIZE):
+                for step_y in range(GRID_SIZE):
+                    if (step_x,step_y) in shuffled_sub_images.keys():
+                        image_shuffled[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :] = shuffled_sub_images[(step_x,step_y)]
+
+
+
+
+            ### Show shuffled image
+            # plt.imshow(image_shuffled)
+            # plt.show()
+            img_renamed = img_name.split(".")[0] + '_shuffled.' + img_name.split(".")[1]
+            img.imsave(os.path.join(output_dir, img_renamed),image_shuffled)
+            self.__count_saved_img += 1
+
+        print("Number of succesfully processed images: {}".format(self.__count_saved_img))
+
+
 
     def __make_output(self, img_paths, output_dir):
         """
