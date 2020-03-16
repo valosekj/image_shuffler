@@ -10,7 +10,7 @@
 # VER = 16-03-2020
 #
 ########################################
-
+import argparse
 import matplotlib.image as img
 import matplotlib.pyplot as plt
 import matplotlib
@@ -29,6 +29,7 @@ matplotlib.use('TkAgg')     # has to be here due to plt.show() command - https:/
 
 class Scrambler():
 
+    # initial constructor to set the values
     def __init__(self):
         self.__input_dir = ""
         self.__output_dir = ""
@@ -247,6 +248,45 @@ class Scrambler():
                     image_shuffled[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :] = shuffled_sub_images[(step_x, step_y)]
 
         return image_shuffled
+
+    # TODO: implement this parser inside script
+    # parser inspiration - https://github.com/neuropoly/spinalcordtoolbox/blob/jca/2633-dmri-moco/scripts/sct_image.py
+    def get_parser():
+
+        parser = argparse.ArgumentParser(
+            description='Perform shuffle/mixing if input image(s)',
+            add_help=None,
+            formatter_class=SmartFormatter,
+            prog=os.path.basename(__file__).strip(".py"))
+
+        mandatory = parser.add_argument_group("MANDATORY ARGUMENTS")
+        mandatory.add_argument(
+            "-i",
+            metavar=Metavar.file,
+            help="Folder with input image(s)",
+            required=True)
+
+        optional = parser.add_argument_group("OPTIONAL ARGUMENTS")
+        optional.add_argument(
+            "-h",
+            "--help",
+            action="help",
+            help="Show this help message and exit")
+        optional.add_argument(
+            "-a",
+            help="Type of algorithm.",
+            required=False,
+            choices = ('random', 'nonzero'))
+        optional.add_argument(
+            '-o',
+            metavar=Metavar.file,
+            help='Output directory.',
+            required=False)
+        optional.add_argument(
+            '-g',
+            metavar=Metavar.file,
+            help='Grid size. Example: 3.',
+            required=False)
 
 if __name__ == "__main__":
     scrambler = Scrambler()
