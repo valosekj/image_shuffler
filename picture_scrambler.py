@@ -251,18 +251,17 @@ class Scrambler():
 
     # TODO: implement this parser inside script
     # parser inspiration - https://github.com/neuropoly/spinalcordtoolbox/blob/jca/2633-dmri-moco/scripts/sct_image.py
-    def get_parser():
+    def get_parser(self):
 
         parser = argparse.ArgumentParser(
             description='Perform shuffle/mixing if input image(s)',
             add_help=None,
-            formatter_class=SmartFormatter,
             prog=os.path.basename(__file__).strip(".py"))
 
         mandatory = parser.add_argument_group("MANDATORY ARGUMENTS")
         mandatory.add_argument(
             "-i",
-            metavar=Metavar.file,
+            metavar='input_data',
             help="Folder with input image(s)",
             required=True)
 
@@ -274,17 +273,19 @@ class Scrambler():
             help="Show this help message and exit")
         optional.add_argument(
             "-a",
+            metavar='algorithm',
             help="Type of algorithm.",
             required=False,
             choices = ('random', 'nonzero'))
         optional.add_argument(
             '-o',
-            metavar=Metavar.file,
+            metavar='output_directory',
             help='Output directory.',
             required=False)
         optional.add_argument(
             '-g',
-            metavar=Metavar.file,
+            metavar='grid_size',
+            type=int,
             help='Grid size. Example: 3.',
             required=False)
 
