@@ -7,7 +7,7 @@
 # Jan Valosek, fMRI laboratory Olomouc
 # Jan Vicha
 # 2020
-# VER = 14-03-2020
+# VER = 16-03-2020
 #
 ########################################
 
@@ -54,6 +54,7 @@ class Scrambler():
             return
 
         self.__make_output(self.__img_paths, self.__output_dir)
+        #self.__make_output_2(self.__img_paths, self.__output_dir)
 
 
 
@@ -139,9 +140,10 @@ class Scrambler():
             print("Output directory {} was successfully created inside {}".format(output_dir_name,input_dir))
         return out_dir
 
+
     def __make_output(self, img_paths, output_dir):
         """
-        Function for shuffle of image
+        Fetch image, get its size, define pixel positions for shuffle, call shuffle function
         :param img_paths: image paths
         :param output_dir: output directory
         :return:
@@ -149,7 +151,6 @@ class Scrambler():
         for img_name, img_path in img_paths.items():    # loop through individual images
 
             image = img.imread(img_path)                # fetch image using matplotlib.image
-            image_shuffled = image.copy()               # create copy of original image
 
             width = image.shape[0]
             height = image.shape[1]
@@ -158,43 +159,11 @@ class Scrambler():
             # plt.imshow(image)
             # plt.show()
 
-            index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in voxel for splitting input image
+            index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in pixel for splitting input image
             index_y = range(1,int(height/GRID_SIZE*(GRID_SIZE+1)),int(height/GRID_SIZE))
-            index_subplot=0
-            subimage_min = {}
-            sub_image = []
 
-            for step_x in range(GRID_SIZE):
-                for step_y in range(GRID_SIZE):
-                    index_subplot += 1
-                    sub_image.append(image[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :])    # cut/split input image into grid and save individual subimages into one 4D array
-                    # plt.subplot(GRID_SIZE,GRID_SIZE,index_subplot)      # create empty subplot
-                    # plt.imshow(sub_image[index_subplot-1])
-
-                    subimage_min[index_subplot-1] = sub_image[index_subplot-1].min()
-
-            #plt.show()
-
-            # TODO - finish this part
-            ### Shuffle only not zero subiamges
-            #subimage_min_lower = {}
-            #subimage_min_lower = {k: v for (k, v) in subimage_min.items() if v < 100}
-
-
-            ### Shuffle randomly all subimages
-            sub_image_random = sub_image.copy()     # Create copy of the original 4D list (list of 3D arrays) with individual subimages
-            random.shuffle(sub_image_random)        # Shuffle randomly subimages
-            index_subplot=0
-
-            for step_x in range(GRID_SIZE):
-                for step_y in range(GRID_SIZE):
-                    index_subplot += 1
-                    #plt.subplot(GRID_SIZE,GRID_SIZE,index_subplot)      # create empty subplot
-                    #plt.imshow(sub_image_random[index_subplot-1])       # plot randomly shuffled subimages
-
-                    image_shuffled[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :] = sub_image_random[index_subplot-1]
-
-            # plt.show()
+            #image_shuffled = self.__random_shuffle(image, index_x, index_y)
+            image_shuffled = self.__nonzero_shuffle(image, index_x, index_y)
 
             ### Show shuffled image
             # plt.imshow(image_shuffled)
@@ -205,6 +174,79 @@ class Scrambler():
 
         print("Number of succesfully processed images: {}".format(self.__count_saved_img))
 
+    def __random_shuffle(self, image, index_x, index_y):
+        """
+        Shuffle image randomly
+        :param image: input image
+        :param index_x: range of pixels for image split
+        :param index_y: range of pixels for image split
+        :return: shuffled image
+        """
+        image_shuffled = image.copy()  # create copy of original image
+
+        index_subplot = 0
+        sub_image = []
+
+        for step_x in range(GRID_SIZE):
+            for step_y in range(GRID_SIZE):
+                index_subplot += 1
+                sub_image.append(image[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :])  # cut/split input image into grid and save individual subimages into one 4D array
+                # plt.subplot(GRID_SIZE,GRID_SIZE,index_subplot)      # create empty subplot
+                # plt.imshow(sub_image[index_subplot-1])
+
+        # plt.show()
+
+        sub_image_random = sub_image.copy()  # Create copy of the original 4D list (list of 3D arrays) with individual subimages
+        random.shuffle(sub_image_random)  # Shuffle randomly subimages
+        index_subplot = 0
+
+        for step_x in range(GRID_SIZE):
+            for step_y in range(GRID_SIZE):
+                index_subplot += 1
+                # plt.subplot(GRID_SIZE,GRID_SIZE,index_subplot)      # create empty subplot
+                # plt.imshow(sub_image_random[index_subplot-1])       # plot randomly shuffled subimages
+
+                image_shuffled[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :] = sub_image_random[index_subplot - 1]
+
+        # plt.show()
+
+        return image_shuffled
+
+    def __nonzero_shuffle(self, image, index_x, index_y):
+        """
+        Shuffle only parts of image containing nonzero elements
+        :param image: input image
+        :param index_x: range of pixels for image split
+        :param index_y: range of pixels for image split
+        :return:
+        """
+
+        image_shuffled = image.copy()  # create copy of original image
+
+        sub_image = {}
+
+        # MAKE dictionary of non zero pixels
+        for step_x in range(GRID_SIZE):
+            for step_y in range(GRID_SIZE):
+                _add_part = image[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :]
+
+                if _add_part.min() < 200:
+                    sub_image[(step_x, step_y)] = _add_part
+
+        ### Shuffle randomly all values
+        values = list(sub_image.values())
+        random.shuffle(values)
+
+        shuffled_sub_images = dict()
+        for index, key in enumerate(sub_image.keys(), 0):
+            shuffled_sub_images[key] = values[index]
+
+        for step_x in range(GRID_SIZE):
+            for step_y in range(GRID_SIZE):
+                if (step_x, step_y) in shuffled_sub_images.keys():
+                    image_shuffled[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :] = shuffled_sub_images[(step_x, step_y)]
+
+        return image_shuffled
 
 if __name__ == "__main__":
     scrambler = Scrambler()
