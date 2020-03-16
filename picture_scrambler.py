@@ -39,11 +39,25 @@ class Scrambler():
     def main_logic(self):
         """
         Main logic for making scrambling images.
-        """        
-        self.__input_dir = self.__get_input_dir()
+        """
 
-        if self.__input_dir is None:
-            return
+        # Get parser args
+        parser = self.get_parser()
+        self.arguments = parser.parse_args()
+
+        #TODO!!!!! - here is problem that self.arguments.a is not global variable althouth it is self
+        print(self.arguments.a)
+        exit(0)
+
+        if self.arguments.i is None:
+            self.__input_dir = INPUT_DIR
+        else:
+            self.__input_dir = self.arguments.i
+
+        # self.__input_dir = self.__get_input_dir()
+
+        #if self.__input_dir is None:
+        #    return
 
         self.__img_paths = self.__get_img_paths(self.__input_dir, ENABLED_FORMATS)
         if len(self.__img_paths) == 0:
@@ -55,8 +69,6 @@ class Scrambler():
             return
 
         self.__make_output(self.__img_paths, self.__output_dir)
-        #self.__make_output_2(self.__img_paths, self.__output_dir)
-
 
 
     def __get_input_dir(self):
@@ -112,7 +124,7 @@ class Scrambler():
         :type enabled_formats: [str]
         :return: Return img name with img path. format: { "img_name": "img_path"}
         :rtype: dict
-        """        
+        """
         img_paths = {}
         for file_name in os.listdir(input_dir):
             file_path = os.path.join(input_dir,file_name) 
@@ -163,8 +175,10 @@ class Scrambler():
             index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in pixel for splitting input image
             index_y = range(1,int(height/GRID_SIZE*(GRID_SIZE+1)),int(height/GRID_SIZE))
 
-            #image_shuffled = self.__random_shuffle(image, index_x, index_y)
-            image_shuffled = self.__nonzero_shuffle(image, index_x, index_y)
+            if self.arguments.i == 'random':
+                image_shuffled = self.__random_shuffle(image, index_x, index_y)
+            elif self.arguments.i == 'nonzero':
+                image_shuffled = self.__nonzero_shuffle(image, index_x, index_y)
 
             ### Show shuffled image
             # plt.imshow(image_shuffled)
@@ -255,15 +269,17 @@ class Scrambler():
 
         parser = argparse.ArgumentParser(
             description='Perform shuffle/mixing if input image(s)',
-            add_help=None,
-            prog=os.path.basename(__file__).strip(".py"))
+            add_help=False,
+            prog=os.path.basename(__file__))
 
         mandatory = parser.add_argument_group("MANDATORY ARGUMENTS")
         mandatory.add_argument(
             "-i",
-            metavar='input_data',
+            metavar='<input_data>',
             help="Folder with input image(s)",
-            required=True)
+            required=True,
+            # required=False,
+            )
 
         optional = parser.add_argument_group("OPTIONAL ARGUMENTS")
         optional.add_argument(
@@ -273,21 +289,23 @@ class Scrambler():
             help="Show this help message and exit")
         optional.add_argument(
             "-a",
-            metavar='algorithm',
-            help="Type of algorithm.",
+            metavar='<algorithm>',
+            help="Type of algorithm. Options: random/nonzero.",
             required=False,
-            choices = ('random', 'nonzero'))
+            default='nonzero')
         optional.add_argument(
             '-o',
-            metavar='output_directory',
+            metavar='<output_dir>',
             help='Output directory.',
             required=False)
         optional.add_argument(
             '-g',
-            metavar='grid_size',
+            metavar='<int>',
             type=int,
             help='Grid size. Example: 3.',
             required=False)
+
+        return parser
 
 if __name__ == "__main__":
     scrambler = Scrambler()
