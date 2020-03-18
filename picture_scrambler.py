@@ -15,6 +15,7 @@ import matplotlib.image as img
 import matplotlib.pyplot as plt
 import matplotlib
 import os, sys, random
+from scipy import ndimage
 
 ########### Settings for Change
 # INPUT_DIR = ""
@@ -54,8 +55,6 @@ class Scrambler():
             return
 
         self.__make_output(self.__img_paths, self.__output_dir)
-        #self.__make_output_2(self.__img_paths, self.__output_dir)
-
 
 
     def __get_input_dir(self):
@@ -196,8 +195,11 @@ class Scrambler():
 
         # plt.show()
 
-        sub_image_random = sub_image.copy()  # Create copy of the original 4D list (list of 3D arrays) with individual subimages
-        random.shuffle(sub_image_random)  # Shuffle randomly subimages
+        sub_image_random = sub_image.copy()     # Create copy of the original 4D list (list of 3D arrays) with individual subimages
+        random.shuffle(sub_image_random)        # Shuffle randomly subimages
+
+        sub_image_random = self.__rotation(sub_image_random)
+
         index_subplot = 0
 
         for step_x in range(GRID_SIZE):
@@ -233,9 +235,11 @@ class Scrambler():
                 if _add_part.min() < 200:
                     sub_image[(step_x, step_y)] = _add_part
 
-        ### Shuffle randomly all values
+        ### Shuffle randomly all values (ndarrays)
         values = list(sub_image.values())
-        random.shuffle(values)
+        random.shuffle(values)      # Shuffle randomly individual subimages (ndarrays)
+
+        values = self.__rotation(values)
 
         shuffled_sub_images = dict()
         for index, key in enumerate(sub_image.keys(), 0):
@@ -247,6 +251,25 @@ class Scrambler():
                     image_shuffled[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :] = shuffled_sub_images[(step_x, step_y)]
 
         return image_shuffled
+
+    def __rotation(self, images):
+        """
+        Rotate individual subimages inside images variable by randomly selected angle
+        :param images:  list of ndarrays
+        :return:        list of rotated ndarrays
+        """
+
+        images_rotated = list()
+
+        # List of possible angles for rotation
+        angles = [0,90,180,270]
+
+        # TODO: after rotation, black border occurs in rotated image - find out how to switch it off
+        # Loop through individual subimages
+        for image in images:
+            images_rotated.append(ndimage.rotate(image, angles[random.randint(0,len(angles)-1)]))       # rotate image by randomly selected angle
+
+        return images_rotated
 
 if __name__ == "__main__":
     scrambler = Scrambler()
