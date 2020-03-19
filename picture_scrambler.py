@@ -17,8 +17,8 @@ import matplotlib
 import os, sys, random
 
 ########### Settings for Change
-# INPUT_DIR = ""
-INPUT_DIR = '/Users/valosek/Documents/python_projects/picture_scramble/data/'
+INPUT_DIR = ""
+# INPUT_DIR = '/Users/valosek/Documents/python_projects/picture_scramble/data/'
 # INPUT_DIR = '/Users/jan/Projects/personal/valda/image_shuffler/data/'
 OUTPUT_DIR_NAME = 'scrambled_data'
 ENABLED_FORMATS = ["bmp"]
@@ -45,60 +45,53 @@ class Scrambler():
         parser = self.get_parser()
         self.arguments = parser.parse_args()
 
-        #TODO!!!!! - here is problem that self.arguments.a is not global variable althouth it is self
-        print(self.arguments.a)
-        exit(0)
 
+        # SET input_dir 
         if self.arguments.i is None:
+            # Only for debuging...
             self.__input_dir = INPUT_DIR
+            self.__input_dir = self.__control_input_dir(INPUT_DIR)
         else:
-            self.__input_dir = self.arguments.i
+            # normal mode
+            self.__input_dir = self.__control_input_dir(self.arguments.i)
 
-        # self.__input_dir = self.__get_input_dir()
 
-        #if self.__input_dir is None:
-        #    return
-
+        # CONTROL images in paths 
         self.__img_paths = self.__get_img_paths(self.__input_dir, ENABLED_FORMATS)
         if len(self.__img_paths) == 0:
             print("Input directory is empty.")
-            return
+            exit(0)
 
-        self.__output_dir = self.__make_output_dir(self.__input_dir, OUTPUT_DIR_NAME)
-        if self.__output_dir is None:
-            return
 
+        # CHECK output directory arg
+        if self.arguments.o is not None:
+            self.__output_dir = self.__make_output_dir(self.arguments.o, OUTPUT_DIR_NAME)
+        else:
+            self.__output_dir = self.__make_output_dir(self.__input_dir, OUTPUT_DIR_NAME)
+
+
+        # MAKE MAGIC PROCESS
         self.__make_output(self.__img_paths, self.__output_dir)
 
 
-    def __get_input_dir(self):
+    def __control_input_dir(self, input_dir):
         """
-        Control global variable INPUT_DIR.
-        INPUT_DIR can be set in this script or passed as 1st argument
-        :return: Return valid directory path or None.
-        :rtype: str, None
-        """        
-        
-        # CHECK INPUT_DIR FROM SCRIPT
-        if len(INPUT_DIR) != 0:
-            if self.__check_dir(INPUT_DIR):
+        Control if input_dir is valid.
+        :param input_dir: path directory
+        :type input_dir: str
+        :return: Return valid directory path or exit script.
+        :rtype: str
+        """
+        if len(input_dir) > 1:
+            if self.__check_dir(input_dir):
                 print("Path to input directory is correct. Continuing...")
-                return INPUT_DIR
+                return input_dir
             else:
                 print("ERROR: Path to input directory is incorrect.")
-                return None
-
-        # CHECK INPUT_DIR FROM input ARGUMENT
-        if len(sys.argv) > 1:
-            if self.__check_dir(sys.argv[1]):
-                print("Path to input directory is correct. Continuing...")
-                return sys.argv[1]
-            else:
-                print("ERROR: Path to input directory is incorrect.")
-                return None
+                exit(0)
         else:
             print("No path to input directory is set.")
-            return None
+            exit(0)
 
     def __check_dir(self, input_dir):
         """
@@ -135,24 +128,26 @@ class Scrambler():
 
     def __make_output_dir(self, input_dir, output_dir_name):
         """
-        Make output directory for shuffled image(s) in INPUT_DIR path.
+        Make output directory for shuffled image(s) in input_dir path.
         Check if input_dir exists, then ensure output directory in path.
+        If error then exit script.
         :param input_dir: input directory path
         :type input_dir: str
         :param output_dir_name: name of output directory
         :type output_dir_name: str
-        :return: Return out_dir if is exists or was created. Otherwise return None.
-        :rtype: str, None
+        :return: Return out_dir if is exists or was created.
+        :rtype: str
         """                      
         if not os.path.exists(input_dir):
-            print("ERROR: Output directory could not be created. Path to input directory is incorrect.")
-            return None
+            print("ERROR: Output directory could not be created. Path to input directory is incorrect '{}'.".format(input_dir))
+            exit(0)
         out_dir = os.path.join(input_dir, output_dir_name)
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
-            print("Output directory {} was successfully created inside {}".format(output_dir_name,input_dir))
+            print("Output directory '{}' was successfully created inside '{}'.".format(output_dir_name,input_dir))
+        else:
+            print("Output directory '{}' is existing in input directory '{}'.".format(output_dir_name,input_dir))
         return out_dir
-
 
     def __make_output(self, img_paths, output_dir):
         """
@@ -175,14 +170,18 @@ class Scrambler():
             index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in pixel for splitting input image
             index_y = range(1,int(height/GRID_SIZE*(GRID_SIZE+1)),int(height/GRID_SIZE))
 
-            if self.arguments.i == 'random':
+            if self.arguments.a == 'random':
                 image_shuffled = self.__random_shuffle(image, index_x, index_y)
-            elif self.arguments.i == 'nonzero':
+            elif self.arguments.a == 'nonzero':
                 image_shuffled = self.__nonzero_shuffle(image, index_x, index_y)
+            else:
+                print("\nChoiced bad algorithm puppy. Executing script.")
+                exit(0)
 
             ### Show shuffled image
             # plt.imshow(image_shuffled)
             # plt.show()
+
             img_renamed = img_name.split(".")[0] + '_shuffled.' + img_name.split(".")[1]
             img.imsave(os.path.join(output_dir, img_renamed),image_shuffled)
             self.__count_saved_img += 1
