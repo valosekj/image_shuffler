@@ -126,7 +126,7 @@ class Scrambler():
         :param enabled_formats: list of enabled formats
         :type enabled_formats: [str]
         :return: Return img name with img path. format: { "img_name": "img_path"}
-        :rtype: dict
+        :rtype: {}
         """
         img_paths = {}
         for file_name in os.listdir(input_dir):
@@ -161,11 +161,14 @@ class Scrambler():
 
     def __make_output(self, img_paths, output_dir):
         """
-        Fetch image, get its size, define pixel positions for shuffle, call shuffle function
-        :param img_paths: image paths
-        :param output_dir: output directory
-        :return:
-        """
+        #TODO zkontroluj popis
+        Fetch image, get its size, define pixel positions for shuffle, call shuffle function.
+        Save images.
+        :param img_paths: img name with img path. format: { "img_name": "img_path"}
+        :type img_paths: {}
+        :param output_dir: output_dir path
+        :type output_dir: str
+        """        
         for img_name, img_path in img_paths.items():    # loop through individual images
 
             image = img.imread(img_path)                # fetch image using matplotlib.image
@@ -196,6 +199,18 @@ class Scrambler():
         print("Number of succesfully processed images: {}".format(self.__count_saved_img))
 
     def __random_shuffle(self, image, index_x, index_y):
+        #TODO dopis
+        """[summary]
+        
+        :param image: [description]
+        :type image: [type]
+        :param index_x: [description]
+        :type index_x: [type]
+        :param index_y: [description]
+        :type index_y: [type]
+        :return: [description]
+        :rtype: [type]
+        """        
         """
         Shuffle image randomly
         :param image: input image
@@ -237,6 +252,18 @@ class Scrambler():
         return image_shuffled
 
     def __nonzero_shuffle(self, image, index_x, index_y):
+        #TODO: dopis
+        """[summary]
+        
+        :param image: [description]
+        :type image: [type]
+        :param index_x: [description]
+        :type index_x: [type]
+        :param index_y: [description]
+        :type index_y: [type]
+        :return: [description]
+        :rtype: [type]
+        """        
         """
         Shuffle only parts of image containing nonzero elements
         :param image: input image
@@ -276,6 +303,12 @@ class Scrambler():
 
 
     def get_parser(self):
+        #TODO dopis, ale tady mozna nemusis
+        """[summary]
+        
+        :return: [description]
+        :rtype: [type]
+        """        
 
         parser = argparse.ArgumentParser(
             description='Perform shuffle/mixing if input image(s). '
@@ -321,20 +354,25 @@ class Scrambler():
 
     def __rotation(self, images):
         """
-        Rotate individual subimages inside images variable by randomly selected angle
-        :param images:  list of ndarrays
-        :return:        list of rotated ndarrays
-        """
+        Rotate individual subimages inside images variable by randomly selected angle.
+        :param images: input images for rotation
+        :type images: [ndarrays]
+        :return: return random rotated each image
+        :rtype: [ndarrays]
+        """        
 
         images_rotated = list()
 
         # List of possible angles for rotation
         angles = [0,90,180,270]
 
-        # TODO: after rotation, black border occurs in rotated image - find out how to switch it off
         # Loop through individual subimages
         for image in images:
-            images_rotated.append(ndimage.rotate(image, angles[random.randint(0,len(angles)-1)]))       # rotate image by randomly selected angle
+            # rotate image by randomly selected angle
+            images_rotated.append(ndimage.rotate(image, 
+                            angles[random.randint(0,len(angles)-1)],
+                            reshape= False,
+                            mode="reflect")) # mode ensure remove black edges on sides image
 
         return images_rotated
 
