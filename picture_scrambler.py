@@ -45,8 +45,7 @@ class Scrambler():
         parser = self.get_parser()
         self.arguments = parser.parse_args()
 
-
-        # SET input_dir 
+        # SET input_dir
         if self.arguments.i is None:
             # Only for debuging...
             self.__input_dir = INPUT_DIR
@@ -55,20 +54,27 @@ class Scrambler():
             # normal mode
             self.__input_dir = self.__control_input_dir(self.arguments.i)
 
-
         # CONTROL images in paths 
         self.__img_paths = self.__get_img_paths(self.__input_dir, ENABLED_FORMATS)
         if len(self.__img_paths) == 0:
             print("Input directory is empty.")
             exit(0)
 
-
-        # CHECK output directory arg
+        # CHECK output directory
         if self.arguments.o is not None:
-            self.__output_dir = self.__make_output_dir(self.arguments.o, OUTPUT_DIR_NAME)
+            self.__output_dir = self.__make_output_dir(self.__input_dir, self.arguments.o)
         else:
             self.__output_dir = self.__make_output_dir(self.__input_dir, OUTPUT_DIR_NAME)
 
+        # CONTROL grid size
+        if self.arguments.g is not None:
+            self.__grid_size = self.arguments.g
+        else:
+            self.__grid_size = GRID_SIZE
+        print("Grid size is set to {} x {}".format(self.__grid_size,self.__grid_size))
+
+        # Print info about algorithm
+        print("Algorithm is set to '{}'.".format(self.arguments.a))
 
         # MAKE MAGIC PROCESS
         self.__make_output(self.__img_paths, self.__output_dir)
@@ -137,17 +143,17 @@ class Scrambler():
         :type output_dir_name: str
         :return: Return out_dir if is exists or was created.
         :rtype: str
-        """                      
+        """
         if not os.path.exists(input_dir):
-            print("ERROR: Output directory could not be created. Path to input directory is incorrect '{}'.".format(input_dir))
+            print("ERROR: Input directory '{}' does not exist or path is incorrect.".format(input_dir))
             exit(0)
-        out_dir = os.path.join(input_dir, output_dir_name)
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
+        output_dir = os.path.join(input_dir, output_dir_name)
+        if not os.path.exists(output_dir):
+            os.mkdir(output_dir)
             print("Output directory '{}' was successfully created inside '{}'.".format(output_dir_name,input_dir))
         else:
-            print("Output directory '{}' is existing in input directory '{}'.".format(output_dir_name,input_dir))
-        return out_dir
+            print("Output directory '{}' already exists in input directory '{}'. Shuffled images will be saved there.".format(output_dir_name,input_dir))
+        return output_dir
 
     def __make_output(self, img_paths, output_dir):
         """
@@ -167,16 +173,13 @@ class Scrambler():
             # plt.imshow(image)
             # plt.show()
 
-            index_x = range(1,int(width/GRID_SIZE*(GRID_SIZE+1)),int(width/GRID_SIZE))      # define posititons in pixel for splitting input image
-            index_y = range(1,int(height/GRID_SIZE*(GRID_SIZE+1)),int(height/GRID_SIZE))
+            index_x = range(1,int(width/self.__grid_size*(self.__grid_size+1)),int(width/self.__grid_size))      # define posititons in pixel for splitting input image
+            index_y = range(1,int(height/self.__grid_size*(self.__grid_size+1)),int(height/self.__grid_size))
 
             if self.arguments.a == 'random':
                 image_shuffled = self.__random_shuffle(image, index_x, index_y)
             elif self.arguments.a == 'nonzero':
                 image_shuffled = self.__nonzero_shuffle(image, index_x, index_y)
-            else:
-                print("\nChoiced bad algorithm puppy. Executing script.")
-                exit(0)
 
             ### Show shuffled image
             # plt.imshow(image_shuffled)
@@ -201,11 +204,11 @@ class Scrambler():
         index_subplot = 0
         sub_image = []
 
-        for step_x in range(GRID_SIZE):
-            for step_y in range(GRID_SIZE):
+        for step_x in range(self.__grid_size):
+            for step_y in range(self.__grid_size):
                 index_subplot += 1
                 sub_image.append(image[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :])  # cut/split input image into grid and save individual subimages into one 4D array
-                # plt.subplot(GRID_SIZE,GRID_SIZE,index_subplot)      # create empty subplot
+                # plt.subplot(self.__grid_size,self.__grid_size,index_subplot)      # create empty subplot
                 # plt.imshow(sub_image[index_subplot-1])
 
         # plt.show()
@@ -214,10 +217,10 @@ class Scrambler():
         random.shuffle(sub_image_random)  # Shuffle randomly subimages
         index_subplot = 0
 
-        for step_x in range(GRID_SIZE):
-            for step_y in range(GRID_SIZE):
+        for step_x in range(self.__grid_size):
+            for step_y in range(self.__grid_size):
                 index_subplot += 1
-                # plt.subplot(GRID_SIZE,GRID_SIZE,index_subplot)      # create empty subplot
+                # plt.subplot(self.__grid_size,self.__grid_size,index_subplot)      # create empty subplot
                 # plt.imshow(sub_image_random[index_subplot-1])       # plot randomly shuffled subimages
 
                 image_shuffled[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :] = sub_image_random[index_subplot - 1]
@@ -240,8 +243,8 @@ class Scrambler():
         sub_image = {}
 
         # MAKE dictionary of non zero pixels
-        for step_x in range(GRID_SIZE):
-            for step_y in range(GRID_SIZE):
+        for step_x in range(self.__grid_size):
+            for step_y in range(self.__grid_size):
                 _add_part = image[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :]
 
                 if _add_part.min() < 200:
@@ -255,19 +258,18 @@ class Scrambler():
         for index, key in enumerate(sub_image.keys(), 0):
             shuffled_sub_images[key] = values[index]
 
-        for step_x in range(GRID_SIZE):
-            for step_y in range(GRID_SIZE):
+        for step_x in range(self.__grid_size):
+            for step_y in range(self.__grid_size):
                 if (step_x, step_y) in shuffled_sub_images.keys():
                     image_shuffled[index_x[step_x]:index_x[step_x + 1], index_y[step_y]:index_y[step_y + 1], :] = shuffled_sub_images[(step_x, step_y)]
 
         return image_shuffled
 
-    # TODO: implement this parser inside script
-    # parser inspiration - https://github.com/neuropoly/spinalcordtoolbox/blob/jca/2633-dmri-moco/scripts/sct_image.py
     def get_parser(self):
 
         parser = argparse.ArgumentParser(
-            description='Perform shuffle/mixing if input image(s)',
+            description='Perform shuffle/mixing if input image(s). '
+                        'Jan Valosek, Jan Vicha, 2020',
             add_help=False,
             prog=os.path.basename(__file__))
 
@@ -285,11 +287,12 @@ class Scrambler():
             "-h",
             "--help",
             action="help",
-            help="Show this help message and exit")
+            help="Show this help message and exit.")
         optional.add_argument(
             "-a",
             metavar='<algorithm>',
             help="Type of algorithm. Options: random/nonzero.",
+            choices=['random','nonzero'],
             required=False,
             default='nonzero')
         optional.add_argument(
