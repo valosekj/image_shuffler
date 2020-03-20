@@ -332,7 +332,7 @@ class Scrambler():
     def get_parser(self):
 
         parser = argparse.ArgumentParser(
-            description='Perform shuffle/mixing if input image(s). '
+            description='Perform shuffle/mixing of input image(s). '
                         'Jan Valosek, Jan Vicha, 2020',
             add_help=False,
             prog=os.path.basename(__file__))
@@ -368,7 +368,8 @@ class Scrambler():
             '-g',
             metavar='<int>',
             type=int,
-            help='Grid size. Example: 3.',
+            help='Grid size. Options: 3/6/9/12.',
+            choices=[3,6,9,12],
             required=False)
 
         return parser
