@@ -1,29 +1,43 @@
-########################################
+################################################
 #
-# Script for shuffling of image(s).
-# Output data will be stored in input directory
+# Script for shuffling/mixing of input image(s).
+# Input image(s) is splitted by defined grid,
+# individual parts of this grid are randomly
+# shuffled (all parts or only nonzero parts)
+# and image is put back together.
+#
+# Output data are stored in input directory
 # into newly created directory 'scrambled_data'.
+#
+# USAGE:
+#
+#   python picture_scrambler.py -i <input_data>
+#
+# TO SEE ALL OPTIONS, run:
+#
+#   python picture_scrambler.py -h
+#
+################################################
 #
 # Jan Valosek, fMRI laboratory Olomouc
 # Jan Vicha
 # 2020
-# VER = 16-03-2020
+# VER = 20-03-2020
 #
-########################################
+################################################
 import argparse
 import matplotlib.image as img
 import matplotlib.pyplot as plt
 import matplotlib
-import os, sys, random
+import os, random
 from scipy import ndimage
 
 ########### Settings for Change
 INPUT_DIR = ""
-# INPUT_DIR = '/Users/valosek/Documents/python_projects/picture_scramble/data/'
-# INPUT_DIR = '/Users/jan/Projects/personal/valda/image_shuffler/data/'
-OUTPUT_DIR_NAME = 'scrambled_data'
-ENABLED_FORMATS = ["bmp"]
-GRID_SIZE = 9
+# INPUT_DIR = '/Users/<user_name>/<input_data>/'    # set this variable for debug, then uncomment line 340
+OUTPUT_DIR_NAME = 'scrambled_data'                  # default name of output directory
+ENABLED_FORMATS = ["bmp"]                           # enabled formats of input images
+GRID_SIZE = 9                                       # default size grid
 ########### Base Settings 
 matplotlib.use('TkAgg')     # has to be here due to plt.show() command - https://stackoverflow.com/questions/56656777/userwarning-matplotlib-is-currently-using-agg-which-is-a-non-gui-backend-so
 ########### 
@@ -86,10 +100,10 @@ class Scrambler():
 
     def __control_input_dir(self, input_dir):
         """
-        Control if input_dir is valid.
-        :param input_dir: path directory
+        Control if input directory exists.
+        :param input_dir: name of input directory
         :type input_dir: str
-        :return: Return valid directory path or exit script.
+        :return: Return valid input directory name or exit script.
         :rtype: str
         """
         if len(input_dir) > 1:
@@ -97,7 +111,7 @@ class Scrambler():
                 print("Path to input directory is correct. Continuing...")
                 return input_dir
             else:
-                print("ERROR: Path to input directory is incorrect.")
+                print("ERROR: Path to input directory is incorrect or input directory does not exist.")
                 exit(0)
         else:
             print("No path to input directory is set.")
@@ -138,9 +152,8 @@ class Scrambler():
 
     def __make_output_dir(self, input_dir, output_dir_name):
         """
-        Make output directory for shuffled image(s) in input_dir path.
-        Check if input_dir exists, then ensure output directory in path.
-        If error then exit script.
+        Create directory for shuffled image(s) in input_dir path.
+        Check if input_dir exists, create output directory or exit script.
         :param input_dir: input directory path
         :type input_dir: str
         :param output_dir_name: name of output directory
@@ -161,9 +174,7 @@ class Scrambler():
 
     def __make_output(self, img_paths, output_dir):
         """
-        #TODO zkontroluj popis
-        Fetch image, get its size, define pixel positions for shuffle, call shuffle function.
-        Save images.
+        Fetch image, get its size, define pixel positions for shuffle, call shuffle function and save shuffled image.
         :param img_paths: img name with img path. format: { "img_name": "img_path"}
         :type img_paths: {}
         :param output_dir: output_dir path
@@ -183,6 +194,7 @@ class Scrambler():
             index_x = range(1,int(width/self.__grid_size*(self.__grid_size+1)),int(width/self.__grid_size))      # define posititons in pixel for splitting input image
             index_y = range(1,int(height/self.__grid_size*(self.__grid_size+1)),int(height/self.__grid_size))
 
+            # Select shuffle algorithm
             if self.arguments.a == 'random':
                 image_shuffled = self.__random_shuffle(image, index_x, index_y)
             elif self.arguments.a == 'nonzero':
@@ -199,24 +211,17 @@ class Scrambler():
         print("Number of succesfully processed images: {}".format(self.__count_saved_img))
 
     def __random_shuffle(self, image, index_x, index_y):
-        #TODO dopis
-        """[summary]
-        
-        :param image: [description]
-        :type image: [type]
-        :param index_x: [description]
-        :type index_x: [type]
-        :param index_y: [description]
-        :type index_y: [type]
-        :return: [description]
-        :rtype: [type]
-        """        
         """
-        Shuffle image randomly
+        Split input image into defined grid, randomly shuffle
+        all its parts and put image back together.
         :param image: input image
-        :param index_x: range of pixels for image split
-        :param index_y: range of pixels for image split
+        :type image: ndarray
+        :param index_x: positions in pixel for image splitting in x axis
+        :type index_x: range
+        :param index_y: positions in pixel for image splitting in y axis
+        :type index_y: range
         :return: shuffled image
+        :rtype: ndarray
         """
         image_shuffled = image.copy()  # create copy of original image
 
@@ -252,24 +257,17 @@ class Scrambler():
         return image_shuffled
 
     def __nonzero_shuffle(self, image, index_x, index_y):
-        #TODO: dopis
-        """[summary]
-        
-        :param image: [description]
-        :type image: [type]
-        :param index_x: [description]
-        :type index_x: [type]
-        :param index_y: [description]
-        :type index_y: [type]
-        :return: [description]
-        :rtype: [type]
-        """        
         """
-        Shuffle only parts of image containing nonzero elements
+        Split input image into defined grid, randomly shuffle
+        only its nonzero parts and put image back together.
         :param image: input image
-        :param index_x: range of pixels for image split
-        :param index_y: range of pixels for image split
-        :return:
+        :type image: ndarray
+        :param index_x: positions in pixel for image splitting in x axis
+        :type index_x: range
+        :param index_y: positions in pixel for image splitting in y axis
+        :type index_y: range
+        :return: shuffled image
+        :rtype: ndarray
         """
 
         image_shuffled = image.copy()  # create copy of original image
@@ -301,14 +299,31 @@ class Scrambler():
 
         return image_shuffled
 
+    def __rotation(self, images):
+        """
+        Rotate individual subimages inside images variable by randomly selected angle.
+        :param images: input subimages for rotation
+        :type images: list of ndarrays
+        :return: return randomly rotated subimages
+        :rtype: list of ndarrays
+        """
+
+        images_rotated = list()
+
+        # List of possible angles for rotation
+        angles = [0,90,180,270]
+
+        # Loop through individual subimages
+        for image in images:
+            # rotate image by randomly selected angle
+            images_rotated.append(ndimage.rotate(image,
+                            angles[random.randint(0,len(angles)-1)],
+                            reshape= False,
+                            mode="reflect")) # mode ensure remove black edges on sides image
+
+        return images_rotated
 
     def get_parser(self):
-        #TODO dopis, ale tady mozna nemusis
-        """[summary]
-        
-        :return: [description]
-        :rtype: [type]
-        """        
 
         parser = argparse.ArgumentParser(
             description='Perform shuffle/mixing if input image(s). '
@@ -351,31 +366,6 @@ class Scrambler():
             required=False)
 
         return parser
-
-    def __rotation(self, images):
-        """
-        Rotate individual subimages inside images variable by randomly selected angle.
-        :param images: input images for rotation
-        :type images: [ndarrays]
-        :return: return random rotated each image
-        :rtype: [ndarrays]
-        """        
-
-        images_rotated = list()
-
-        # List of possible angles for rotation
-        angles = [0,90,180,270]
-
-        # Loop through individual subimages
-        for image in images:
-            # rotate image by randomly selected angle
-            images_rotated.append(ndimage.rotate(image, 
-                            angles[random.randint(0,len(angles)-1)],
-                            reshape= False,
-                            mode="reflect")) # mode ensure remove black edges on sides image
-
-        return images_rotated
-
 
 if __name__ == "__main__":
     scrambler = Scrambler()
