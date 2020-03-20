@@ -19,6 +19,12 @@
 #
 ################################################
 #
+# TIP - if you get following error on Linux:
+# ModuleNotFoundError: No module named 'tkinter'
+# RUN: sudo apt-get install python3-tk
+#
+################################################
+#
 # Jan Valosek, fMRI laboratory Olomouc
 # Jan Vicha
 # 2020
@@ -38,9 +44,9 @@ INPUT_DIR = ""
 OUTPUT_DIR_NAME = 'scrambled_data'                  # default name of output directory
 ENABLED_FORMATS = ["bmp"]                           # enabled formats of input images
 GRID_SIZE = 9                                       # default size grid
-########### Base Settings 
+########### Base Settings
 matplotlib.use('TkAgg')     # has to be here due to plt.show() command - https://stackoverflow.com/questions/56656777/userwarning-matplotlib-is-currently-using-agg-which-is-a-non-gui-backend-so
-########### 
+###########
 
 class Scrambler():
 
@@ -69,7 +75,7 @@ class Scrambler():
             # normal mode
             self.__input_dir = self.__control_input_dir(self.arguments.i)
 
-        # CONTROL images in paths 
+        # CONTROL images in paths
         self.__img_paths = self.__get_img_paths(self.__input_dir, ENABLED_FORMATS)
         if len(self.__img_paths) == 0:
             print("Input directory is empty.")
@@ -131,7 +137,7 @@ class Scrambler():
             return False
         else:
             return True
-        
+
     def __get_img_paths(self, input_dir, enabled_formats):
         """
         Return directory with all image names and images paths. Include only enabled formats.
@@ -144,7 +150,7 @@ class Scrambler():
         """
         img_paths = {}
         for file_name in os.listdir(input_dir):
-            file_path = os.path.join(input_dir,file_name) 
+            file_path = os.path.join(input_dir,file_name)
             if os.path.isfile(file_path) and file_name.split(".")[-1].lower() in enabled_formats:
                 img_paths[file_name] = file_path
 
@@ -179,7 +185,7 @@ class Scrambler():
         :type img_paths: {}
         :param output_dir: output_dir path
         :type output_dir: str
-        """        
+        """
         for img_name, img_path in img_paths.items():    # loop through individual images
 
             image = img.imread(img_path)                # fetch image using matplotlib.image
