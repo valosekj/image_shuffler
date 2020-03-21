@@ -2,9 +2,9 @@
 
 Python script for shuffling/mixing of input image(s).
 
-Contacts:
+### Contacts:
 
-Jan Valošek, fRMI laboratory, University Hospital Olomouc and Palacky University Olomouc, Czech Republic
+Jan Valošek, fMRI laboratory, University Hospital Olomouc and Palacky University Olomouc, Czech Republic
 
 Jan Vícha - [github](https://github.com/vichi99)
 
