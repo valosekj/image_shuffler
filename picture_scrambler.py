@@ -31,11 +31,13 @@
 # VER = 20-03-2020
 #
 ################################################
+import os
+import sys
+import random
 import argparse
 import matplotlib.image as img
 import matplotlib.pyplot as plt
 import matplotlib
-import os, random
 from scipy import ndimage
 
 ########### Settings for Change
@@ -78,8 +80,7 @@ class Scrambler():
         # CONTROL images in paths
         self.__img_paths = self.__get_img_paths(self.__input_dir, ENABLED_FORMATS)
         if len(self.__img_paths) == 0:
-            print("Input directory is empty.")
-            exit(0)
+            sys.exit("Input directory is empty.")
 
         # CHECK output directory
         if self.arguments.o is not None:
@@ -117,11 +118,10 @@ class Scrambler():
                 print("Path to input directory is correct. Continuing...")
                 return input_dir
             else:
-                print("ERROR: Path to input directory is incorrect or input directory does not exist.")
-                exit(0)
+                sys.exit("ERROR: Path to input directory is incorrect or input directory does not exist.")
         else:
-            print("No path to input directory is set.")
-            exit(0)
+            sys.exit("No path to input directory is set.")
+
 
     def __check_dir(self, input_dir):
         """
@@ -168,8 +168,7 @@ class Scrambler():
         :rtype: str
         """
         if not os.path.exists(input_dir):
-            print("ERROR: Input directory '{}' does not exist or path is incorrect.".format(input_dir))
-            exit(0)
+            sys.exit("ERROR: Input directory '{}' does not exist or path is incorrect.".format(input_dir))
         output_dir = os.path.join(input_dir, output_dir_name)
         if not os.path.exists(output_dir):
             os.mkdir(output_dir)
