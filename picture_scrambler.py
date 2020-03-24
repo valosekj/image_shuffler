@@ -213,7 +213,12 @@ class Scrambler():
             img.imsave(os.path.join(output_dir, img_renamed),image_shuffled)
             self.__count_saved_img += 1
 
-        print("Number of succesfully processed images: {}".format(self.__count_saved_img))
+            # Progress counter - inspiration - https://stackoverflow.com/a/3173338/12605960
+            sys.stdout.write("\rNumber of successfully processed images: %s/%s" % (self.__count_saved_img, len(img_paths)))
+            sys.stdout.flush()
+
+        print()     # go to new line when counter finish
+
 
     def __random_shuffle(self, image, index_x, index_y):
         """
