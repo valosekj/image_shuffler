@@ -99,7 +99,8 @@ class Scrambler():
         # Print info about algorithm
         print("Algorithm is set to '{}'.".format(self.arguments.a))
 
-
+        # Print info about rotation of individual subimages
+        print("Rotation of individual subimages is set to {}.".format(self.arguments.r))
 
         # MAKE MAGIC PROCESS
         self.__make_output(self.__img_paths, self.__output_dir)
@@ -250,7 +251,8 @@ class Scrambler():
         sub_image_random = sub_image.copy()     # Create copy of the original 4D list (list of 3D arrays) with individual subimages
         random.shuffle(sub_image_random)        # Shuffle randomly subimages
 
-        sub_image_random = self.__rotation(sub_image_random)
+        if self.arguments.r:
+            sub_image_random = self.__rotation(sub_image_random)
 
         index_subplot = 0
 
@@ -296,7 +298,8 @@ class Scrambler():
         values = list(sub_image.values())
         random.shuffle(values)      # Shuffle randomly individual subimages (ndarrays)
 
-        values = self.__rotation(values)
+        if self.arguments.r:
+            values = self.__rotation(values)
 
         shuffled_sub_images = dict()
         for index, key in enumerate(sub_image.keys(), 0):
@@ -359,7 +362,7 @@ class Scrambler():
         optional.add_argument(
             "-a",
             metavar='<algorithm>',
-            help="Type of algorithm. Options: random/nonzero.",
+            help="Type of algorithm. Options: random/nonzero. Default = nonzero.",
             choices=['random','nonzero'],
             required=False,
             default='nonzero')
@@ -372,9 +375,17 @@ class Scrambler():
             '-g',
             metavar='<int>',
             type=int,
-            help='Grid size. Options: 3/6/9/12.',
+            help='Grid size. Options: 3/6/9/12. Default = 9.',
             choices=[3,6,9,12],
             required=False)
+        optional.add_argument(
+            '-r',
+            metavar='<int>',
+            type=int,
+            help='Turn on/off rotation of individual subimages. Options: 0/1. Default = 1.',
+            choices=[0,1],
+            required=False,
+            default=1)
 
         return parser
 
