@@ -2,7 +2,9 @@
 
 Python script for shuffling/mixing of input image(s).
 
-Used for visual fMRI stimulation.
+![example](example.png?raw=true "Example")
+
+Used for visual event-related fMRI stimulation.
 
 ### Contacts:
 
